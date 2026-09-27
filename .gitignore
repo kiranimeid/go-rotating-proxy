@@ -1,0 +1,4 @@
+.codegraph/
+.claude/
+*.exe
+rotating-proxy

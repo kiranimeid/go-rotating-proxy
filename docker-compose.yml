@@ -1,0 +1,33 @@
+services:
+  proxy:
+    build: .
+    container_name: docker_rotating_proxy
+    restart: unless-stopped
+    ports:
+      - "3128:3128"
+      - "30000-30100:30000-30100"
+    volumes:
+      - "./proxyList.txt:/app/proxyList.txt:ro"
+      - "./allowed_ip.txt:/app/allowed_ip.txt:ro"
+    environment:
+      - LISTEN_ADDR=:3128
+      - PROXY_LIST=proxyList.txt
+      - ALLOWED_IP_FILE=allowed_ip.txt
+      - STATIC_PORT_START=30000
+
+  byparr:
+    image: ghcr.io/thephaseless/byparr:latest
+    container_name: byparr
+    restart: unless-stopped
+    ports:
+      - "8191:8191"
+    shm_size: 512mb
+    deploy:
+      resources:
+        limits:
+          cpus: "8.0"
+          memory: 32G
+    depends_on:
+      - proxy
+    environment:
+      - PROXY_SERVER=http://proxy:3128
